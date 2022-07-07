@@ -10,6 +10,8 @@ import styles from "./App.module.css";
 import ExpensesPage from "./components/ExpensesPage";
 import ExpenseEdit from "./components/ExpenseEdit";
 import Notifications from "./components/Notifications";
+import AccountPage from "./components/AccountPage";
+import AccountEdit from "./components/AccountEdit";
 
 function App() {
   return (
@@ -44,6 +46,15 @@ function App() {
               </Route>
               <Route exact path={"/expense/:id"}>
                 <ExpenseEdit />
+              </Route>
+              <Route exact path={"/accounts"}>
+                <AccountPage />
+              </Route>
+              <Route exact path={"/account/new"}>
+                <AccountEdit />
+              </Route>
+              <Route exact path={"/account/:id"}>
+                <AccountEdit />
               </Route>
             </Switch>
           </main>

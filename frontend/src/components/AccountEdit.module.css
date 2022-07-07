@@ -37,11 +37,3 @@ input[type="date"] {
   border: 1px solid #bebebe;
   border-radius: 4px;
 }
-
-select[name="account_id"] {
-  height: 46px;
-  width: 266px;
-  border: 1px solid #bebebe;
-  background: white;
-  border-radius: 4px;
-}

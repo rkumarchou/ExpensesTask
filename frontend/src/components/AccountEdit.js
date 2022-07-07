@@ -3,12 +3,12 @@ import { useParams, useHistory } from "react-router-dom";
 import LoadingIndicator from "./LoadingIndicator";
 import ErrorMessage from "./ErrorMessage";
 import request from "../request";
-import styles from "./ExpenseEdit.module.css";
+import styles from "./AccountEdit.module.css";
 import Button from "./Button";
 import { useNotifications } from "./Notifications";
 import { serializeErrorMessage } from "../utils";
 
-function ExpenseForm({ expense, accounts, onSave, disabled, onDelete }) {
+function AccountForm({ account, onSave, disabled, onDelete }) {
   const [changes, setChanges] = useState({});
 
   function changeField(field, value) {
@@ -19,7 +19,7 @@ function ExpenseForm({ expense, accounts, onSave, disabled, onDelete }) {
   }
 
   const formData = {
-    ...expense,
+    ...account,
     ...changes,
   };
 
@@ -31,54 +31,33 @@ function ExpenseForm({ expense, accounts, onSave, disabled, onDelete }) {
   return (
     <form autoComplete={"off"} onSubmit={handleSubmit} className={styles.form}>
       <fieldset disabled={disabled ? "disabled" : undefined}>
-        <div className={styles.formRow}>
-          <label htmlFor="amount">Amount</label>
-          <input
-            required
-            min={"0"}
-            id={"amount"}
-            type={"number"}
-            value={formData.amount}
-            onChange={(event) => changeField("amount", event.target.value)}
-          />
-        </div>
 
         <div className={styles.formRow}>
-          <label htmlFor="date">Date</label>
+          <label htmlFor="name">Name</label>
           <input
             required
-            id={"date"}
-            type={"date"}
-            value={formData.date}
-            onChange={(event) => changeField("date", event.target.value)}
-          />
-        </div>
-
-        <div className={styles.formRow}>
-          <label htmlFor="description">Description</label>
-          <input
-            required
-            id={"description"}
+            id={"name"}
             type={"text"}
-            value={formData.description}
-            onChange={(event) => changeField("description", event.target.value)}
+            value={formData.name}
+            onChange={(event) => changeField("name", event.target.value)}
           />
         </div>
 
         <div className={styles.formRow}>
-          <label for="account_id">Account</label>
-
-          <select required name="account_id" id="account_id" value={formData.account_id} onChange={(event) => changeField("account_id", event.target.value)}>
-            <option value="">Select Account</option>
-            {accounts.map(function(account) {
-              return (<option value={account.id}>{`${account.name} - ${account.number}`}</option>)
-            })}
-          </select>
+          <label htmlFor="number">Bank Account Number</label>
+          <input
+            required
+            min={"1"}
+            id={"number"}
+            type={"number"}
+            value={formData.number}
+            onChange={(event) => changeField("number", event.target.value)}
+          />
         </div>
       </fieldset>
 
       <div className={styles.formFooter}>
-        {expense.id && (
+        {account.id && (
           <Button action={onDelete} kind={"danger"} disabled={disabled}>
             Delete
           </Button>
@@ -94,18 +73,15 @@ function ExpenseForm({ expense, accounts, onSave, disabled, onDelete }) {
   );
 }
 
-const defaultExpenseData = {
-  amount: 0,
-  date: new Date().toISOString().substr(0, 10),
-  description: "",
-  account_id: "",
+const defaultAccountData = {
+  name: '',
+  number: '',
 };
 
-function ExpenseEdit() {
+function AccountEdit() {
   const { id } = useParams();
   const history = useHistory();
-  const [accounts, setAccounts] = useState([])
-  const [expense, setExpense] = useState(id ? null : defaultExpenseData);
+  const [account, setAccount] = useState(id ? null : defaultAccountData);
   const [loadingStatus, setLoadingStatus] = useState(id ? "loading" : "loaded");
   const [isSaving, setSaving] = useState(false);
   const [isDeleting, setDeleting] = useState(false);
@@ -113,13 +89,13 @@ function ExpenseEdit() {
 
   useEffect(
     function () {
-      async function loadExpense() {
+      async function loadAccount() {
         try {
-          const response = await request(`/expenses/${id}`, {
+          const response = await request(`/accounts/${id}`, {
             method: "GET",
           });
           if (response.ok) {
-            setExpense(response.body);
+            setAccount(response.body);
             setLoadingStatus("loaded");
           } else {
             setLoadingStatus("error");
@@ -130,54 +106,31 @@ function ExpenseEdit() {
       }
 
       if (id) {
-        loadExpense();
+        loadAccount();
       }
     },
     [id]
   );
 
-
-  useEffect(
-    function () {
-      async function loadAccounts() {
-        try {
-          const response = await request('/accounts', {
-            method: "GET",
-          });
-          if (response.ok) {
-            setAccounts(response.body);
-          } else {
-            setLoadingStatus("error");
-          }
-        } catch (error) {
-          setLoadingStatus("error");
-        }
-      }
-
-      loadAccounts();
-    },
-    []
-  );
-
   async function handleSave(changes) {
     try {
       setSaving(true);
-      const url = expense.id ? `/expenses/${expense.id}` : "/expenses";
-      const method = expense.id ? "PATCH" : "POST";
-      const body = expense.id ? changes : { ...defaultExpenseData, ...changes };
+      const url = account.id ? `/accounts/${account.id}` : "/accounts";
+      const method = account.id ? "PATCH" : "POST";
+      const body = account.id ? changes : { ...defaultAccountData, ...changes };
       const response = await request(url, {
         method,
         body,
       });
       if (response.ok) {
-        setExpense(response.body);
+        setAccount(response.body);
       } else {
         const message = serializeErrorMessage(response.body)
         notifyError(message);
       }
     } catch (error) {
       notifyError(
-        "Failed to save expense. Please check your internet connection"
+        "Failed to save account. Please check your internet connection"
       );
     } finally {
       setSaving(false);
@@ -187,17 +140,17 @@ function ExpenseEdit() {
   async function handleDelete() {
     setDeleting(true);
     try {
-      const response = await request(`/expenses/${expense.id}`, {
+      const response = await request(`/accounts/${account.id}`, {
         method: "DELETE",
       });
       if (response.ok) {
-        history.push("/expenses");
+        history.push("/accounts");
       } else {
-        notifyError("Failed to delete expense. Please try again");
+        notifyError("Failed to delete account. Please try again");
       }
     } catch (error) {
       notifyError(
-        "Failed to delete expense. Please check your internet connection"
+        "Failed to delete account. Please check your internet connection"
       );
     } finally {
       setDeleting(false);
@@ -209,10 +162,9 @@ function ExpenseEdit() {
     content = <LoadingIndicator />;
   } else if (loadingStatus === "loaded") {
     content = (
-      <ExpenseForm
-        key={expense.updated_at}
-        expense={expense}
-        accounts={accounts}
+      <AccountForm
+        key={account.updated_at}
+        account={account}
         onSave={handleSave}
         disabled={isSaving || isDeleting}
         onDelete={handleDelete}
@@ -227,4 +179,4 @@ function ExpenseEdit() {
   return <div>{content}</div>;
 }
 
-export default ExpenseEdit;
+export default AccountEdit;

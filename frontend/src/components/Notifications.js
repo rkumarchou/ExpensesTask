@@ -39,7 +39,12 @@ export default function Notifications({ children }) {
 
   const contextValue = useMemo(
     () => ({
-      notify: ({ message, type }) => setNotification({ message, type }),
+      notify: ({ message, type }) => {
+        setNotification({ message, type })
+        setTimeout(() => {
+          setNotification(null)
+        }, 5000);
+      },
     }),
     [setNotification]
   );
